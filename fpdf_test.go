@@ -1442,8 +1442,8 @@ func ExampleFpdf_RegisterImage() {
 	err := pdf.OutputFileAndClose(fileStr)
 	example.Summary(err, fileStr)
 	// Output:
-	// Image image/logo-gray.png is registered
-	// Image image/foo.png is not registered
+	// Image static/image/logo-gray.png is registered
+	// Image static/image/foo.png is not registered
 	// Successfully generated pdf/Fpdf_RegisterImage.pdf
 }
 

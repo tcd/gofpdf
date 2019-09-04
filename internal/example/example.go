@@ -54,12 +54,12 @@ func setRoot() {
 // ImageFile returns a qualified filename in which the path to the image
 // directory is prepended to the specified filename.
 func ImageFile(fileStr string) string {
-	return filepath.Join(gofpdfDir, "image", fileStr)
+	return filepath.Join(gofpdfDir, "static", "image", fileStr)
 }
 
 // FontDir returns the path to the font directory.
 func FontDir() string {
-	return filepath.Join(gofpdfDir, "font")
+	return filepath.Join(gofpdfDir, "static", "font")
 }
 
 // FontFile returns a qualified filename in which the path to the font
@@ -71,7 +71,7 @@ func FontFile(fileStr string) string {
 // TextFile returns a qualified filename in which the path to the text
 // directory is prepended to the specified filename.
 func TextFile(fileStr string) string {
-	return filepath.Join(gofpdfDir, "text", fileStr)
+	return filepath.Join(gofpdfDir, "static", "text", fileStr)
 }
 
 // PdfDir returns the path to the PDF output directory.
