@@ -1,4 +1,4 @@
-module github.com/jung-kurt/gofpdf
+module github.com/tcd/gofpdf
 
 go 1.12
 
@@ -9,4 +9,4 @@ require (
 	golang.org/x/image v0.0.0-20190507092727-e4e5bf290fec
 )
 
-replace github.com/jung-kurt/gopdf => ./
+replace github.com/tcd/gopdf => ./
