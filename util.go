@@ -35,10 +35,6 @@ func round(f float64) int {
 	return int(math.Floor(f + 0.5))
 }
 
-func sprintf(fmtStr string, args ...interface{}) string {
-	return fmt.Sprintf(fmtStr, args...)
-}
-
 // fileExist returns true if the specified normal file exists
 func fileExist(filename string) (ok bool) {
 	info, err := os.Stat(filename)
@@ -430,6 +426,7 @@ func arrayMerge(arr1, arr2 *untypedKeyMap) *untypedKeyMap {
 	return &answer
 }
 
+// Return a copied int slice, less the given key.
 func remove(arr []int, key int) []int {
 	n := 0
 	for i, mKey := range arr {

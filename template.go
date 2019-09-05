@@ -19,6 +19,7 @@ package gofpdf
 
 import (
 	"encoding/gob"
+	"fmt"
 	"sort"
 
 	"github.com/tcd/gofpdf/internal/font"
@@ -87,7 +88,7 @@ func (f *Fpdf) UseTemplateScaled(t Template, corner PointType, size SizeType) {
 		f.templates[tt.ID()] = tt
 	}
 	for name, ti := range t.Images() {
-		name = sprintf("t%s-%s", t.ID(), name)
+		name = fmt.Sprintf("t%s-%s", t.ID(), name)
 		f.images[name] = ti
 	}
 
