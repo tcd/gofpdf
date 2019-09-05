@@ -34,7 +34,7 @@ func main() {
 	var err error
 	var ok bool
 	var showStr, name string
-	err = filepath.Walk("pdf/reference", func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk("../../pdf/reference", func(path string, info os.FileInfo, err error) error {
 		if info.Mode().IsRegular() {
 			name = filepath.Base(path)
 			ok, name = matchTail(name, ".pdf")
@@ -44,7 +44,7 @@ func main() {
 				if ok {
 					fmt.Printf("[%s](%s)\n", showStr, path)
 				} else {
-					ok, showStr = matchHead(name, "contrib ")
+					ok, showStr = matchHead(name, "../../contrib ")
 					if ok {
 						fmt.Printf("[%s](%s)\n", showStr, path)
 					}
