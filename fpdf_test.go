@@ -35,6 +35,7 @@ import (
 	"github.com/tcd/gofpdf"
 	"github.com/tcd/gofpdf/internal/example"
 	"github.com/tcd/gofpdf/internal/files"
+	"github.com/tcd/gofpdf/internal/font"
 )
 
 func init() {
@@ -952,7 +953,7 @@ func ExampleFpdf_SetAcceptPageBreakFunc() {
 func ExampleFpdf_SetKeywords() {
 	var err error
 	fileStr := example.Filename("Fpdf_SetKeywords")
-	err = gofpdf.MakeFont(example.FontFile("CalligrapherRegular.pfb"),
+	err = font.MakeFont(example.FontFile("CalligrapherRegular.pfb"),
 		example.FontFile("cp1252.map"), example.FontDir(), nil, true)
 	if err == nil {
 		pdf := gofpdf.New("", "", "", "")
@@ -2603,7 +2604,7 @@ func ExampleUTF8CutFont() {
 	fullFont, err = ioutil.ReadFile(fullFontFileStr)
 	if err == nil {
 		subFontFileStr = "calligra_abcde.ttf"
-		subFont = gofpdf.UTF8CutFont(fullFont, "abcde")
+		subFont = font.UTF8CutFont(fullFont, "abcde")
 		err = ioutil.WriteFile(subFontFileStr, subFont, 0600)
 		if err == nil {
 			y := 24.0

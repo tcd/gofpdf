@@ -40,6 +40,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tcd/gofpdf/internal/font"
 )
 
 var gl struct {
@@ -80,8 +82,8 @@ func fpdfNew(orientationStr, unitStr, sizeStr, fontDirStr string, size SizeType)
 	f.pageBoxes = make(map[int]map[string]PageBox)
 	f.defPageBoxes = make(map[string]PageBox)
 	f.state = 0
-	f.fonts = make(map[string]fontDefType)
-	f.fontFiles = make(map[string]fontFileType)
+	f.fonts = make(map[string]font.FontDefType)
+	f.fontFiles = make(map[string]font.FontFileType)
 	f.diffs = make([]string, 0, 8)
 	f.templates = make(map[string]Template)
 	f.templateObjects = make(map[string]int)
@@ -1682,15 +1684,15 @@ func (f *Fpdf) addFont(familyStr, styleStr, fileStr string, isUTF8 bool) {
 			f.SetError(err)
 			return
 		}
-		reader := fileReader{readerPosition: 0, array: utf8Bytes}
-		utf8File := newUTF8Font(&reader)
-		err = utf8File.parseFile()
+		reader := font.FileReader{ReaderPosition: 0, Array: utf8Bytes}
+		utf8File := font.NewUTF8Font(&reader)
+		err = utf8File.ParseFile()
 		if err != nil {
 			f.SetError(err)
 			return
 		}
 
-		desc := FontDescType{
+		desc := font.FontDescType{
 			Ascent:       int(utf8File.Ascent),
 			Descent:      int(utf8File.Descent),
 			CapHeight:    utf8File.CapHeight,
@@ -1707,25 +1709,25 @@ func (f *Fpdf) addFont(familyStr, styleStr, fileStr string, isUTF8 bool) {
 		} else {
 			sbarr = makeSubsetRange(32)
 		}
-		def := fontDefType{
+		def := font.FontDefType{
 			Tp:        Type,
 			Name:      fontKey,
 			Desc:      desc,
 			Up:        int(round(utf8File.UnderlinePosition)),
 			Ut:        round(utf8File.UnderlineThickness),
 			Cw:        utf8File.CharWidths,
-			usedRunes: sbarr,
+			UsedRunes: sbarr,
 			File:      fileStr,
-			utf8File:  utf8File,
+			Utf8File:  utf8File,
 		}
-		def.i, _ = generateFontID(def)
+		def.I, _ = font.GenerateFontID(def)
 		f.fonts[fontKey] = def
-		f.fontFiles[fontKey] = fontFileType{
-			length1:  originalSize,
-			fontType: "UTF8",
+		f.fontFiles[fontKey] = font.FontFileType{
+			Length1:  originalSize,
+			FontType: "UTF8",
 		}
-		f.fontFiles[fileStr] = fontFileType{
-			fontType: "UTF8",
+		f.fontFiles[fileStr] = font.FontFileType{
+			FontType: "UTF8",
 		}
 	} else {
 		if f.fontLoader != nil {
@@ -1818,16 +1820,16 @@ func (f *Fpdf) addFontFromBytes(familyStr, styleStr string, jsonFileBytes, zFile
 		// }
 
 		Type := "UTF8"
-		reader := fileReader{readerPosition: 0, array: utf8Bytes}
+		reader := font.FileReader{ReaderPosition: 0, Array: utf8Bytes}
 
-		utf8File := newUTF8Font(&reader)
+		utf8File := font.NewUTF8Font(&reader)
 
-		err := utf8File.parseFile()
+		err := utf8File.ParseFile()
 		if err != nil {
 			fmt.Printf("get metrics Error: %e\n", err)
 			return
 		}
-		desc := FontDescType{
+		desc := font.FontDescType{
 			Ascent:       int(utf8File.Ascent),
 			Descent:      int(utf8File.Descent),
 			CapHeight:    utf8File.CapHeight,
@@ -1844,21 +1846,21 @@ func (f *Fpdf) addFontFromBytes(familyStr, styleStr string, jsonFileBytes, zFile
 		} else {
 			sbarr = makeSubsetRange(32)
 		}
-		def := fontDefType{
+		def := font.FontDefType{
 			Tp:        Type,
 			Name:      fontkey,
 			Desc:      desc,
 			Up:        int(round(utf8File.UnderlinePosition)),
 			Ut:        round(utf8File.UnderlineThickness),
 			Cw:        utf8File.CharWidths,
-			utf8File:  utf8File,
-			usedRunes: sbarr,
+			Utf8File:  utf8File,
+			UsedRunes: sbarr,
 		}
-		def.i, _ = generateFontID(def)
+		def.I, _ = font.GenerateFontID(def) // NOTE: Maybe marshal error here.
 		f.fonts[fontkey] = def
 	} else {
 		// load font definitions
-		var info fontDefType
+		var info font.FontDefType
 		err := json.Unmarshal(jsonFileBytes, &info)
 
 		if err != nil {
@@ -1869,7 +1871,7 @@ func (f *Fpdf) addFontFromBytes(familyStr, styleStr string, jsonFileBytes, zFile
 			return
 		}
 
-		if info.i, err = generateFontID(info); err != nil {
+		if info.I, err = font.GenerateFontID(info); err != nil {
 			f.err = err
 			return
 		}
@@ -1896,17 +1898,17 @@ func (f *Fpdf) addFontFromBytes(familyStr, styleStr string, jsonFileBytes, zFile
 		// embed font
 		if len(info.File) > 0 {
 			if info.Tp == "TrueType" {
-				f.fontFiles[info.File] = fontFileType{
-					length1:  int64(info.OriginalSize),
-					embedded: true,
-					content:  zFileBytes,
+				f.fontFiles[info.File] = font.FontFileType{
+					Length1:  int64(info.OriginalSize),
+					Embedded: true,
+					Content:  zFileBytes,
 				}
 			} else {
-				f.fontFiles[info.File] = fontFileType{
-					length1:  int64(info.Size1),
-					length2:  int64(info.Size2),
-					embedded: true,
-					content:  zFileBytes,
+				f.fontFiles[info.File] = font.FontFileType{
+					Length1:  int64(info.Size1),
+					Length2:  int64(info.Size2),
+					Embedded: true,
+					Content:  zFileBytes,
 				}
 			}
 		}
@@ -1939,7 +1941,7 @@ func (f *Fpdf) AddFontFromReader(familyStr, styleStr string, r io.Reader) {
 	if ok {
 		return
 	}
-	var info fontDefType
+	var info font.FontDefType
 	info = f.loadfont(r)
 	if f.err != nil {
 		return
@@ -1963,9 +1965,9 @@ func (f *Fpdf) AddFontFromReader(familyStr, styleStr string, r io.Reader) {
 	if len(info.File) > 0 {
 		// Embedded font
 		if info.Tp == "TrueType" {
-			f.fontFiles[info.File] = fontFileType{length1: int64(info.OriginalSize)}
+			f.fontFiles[info.File] = font.FontFileType{Length1: int64(info.OriginalSize)}
 		} else {
-			f.fontFiles[info.File] = fontFileType{length1: int64(info.Size1), length2: int64(info.Size2)}
+			f.fontFiles[info.File] = font.FontFileType{Length1: int64(info.Size1), Length2: int64(info.Size2)}
 		}
 	}
 	f.fonts[fontkey] = info
@@ -1977,7 +1979,7 @@ func (f *Fpdf) AddFontFromReader(familyStr, styleStr string, r io.Reader) {
 // current font descriptor will be returned.
 // See FontDescType for documentation about the font descriptor.
 // See AddFont for details about familyStr and styleStr.
-func (f *Fpdf) GetFontDesc(familyStr, styleStr string) FontDescType {
+func (f *Fpdf) GetFontDesc(familyStr, styleStr string) font.FontDescType {
 	if familyStr == "" {
 		return f.currentFont.Desc
 	}
@@ -2080,7 +2082,7 @@ func (f *Fpdf) SetFont(familyStr, styleStr string, size float64) {
 		f.isCurrentUTF8 = false
 	}
 	if f.page > 0 {
-		f.outf("BT /F%s %.2f Tf ET", f.currentFont.i, f.fontSizePt)
+		f.outf("BT /F%s %.2f Tf ET", f.currentFont.I, f.fontSizePt)
 	}
 	return
 }
@@ -2096,7 +2098,7 @@ func (f *Fpdf) SetFontSize(size float64) {
 	f.fontSizePt = size
 	f.fontSize = size / f.k
 	if f.page > 0 {
-		f.outf("BT /F%s %.2f Tf ET", f.currentFont.i, f.fontSizePt)
+		f.outf("BT /F%s %.2f Tf ET", f.currentFont.I, f.fontSizePt)
 	}
 }
 
@@ -2106,7 +2108,7 @@ func (f *Fpdf) SetFontUnitSize(size float64) {
 	f.fontSizePt = size * f.k
 	f.fontSize = size
 	if f.page > 0 {
-		f.outf("BT /F%s %.2f Tf ET", f.currentFont.i, f.fontSizePt)
+		f.outf("BT /F%s %.2f Tf ET", f.currentFont.I, f.fontSizePt)
 	}
 }
 
@@ -2189,7 +2191,7 @@ func (f *Fpdf) Text(x, y float64, txtStr string) {
 		}
 		txt2 = f.escape(utf8toutf16(txtStr, false))
 		for _, uni := range []rune(txtStr) {
-			f.currentFont.usedRunes[int(uni)] = int(uni)
+			f.currentFont.UsedRunes[int(uni)] = int(uni)
 		}
 	} else {
 		txt2 = f.escape(txtStr)
@@ -2380,7 +2382,7 @@ func (f *Fpdf) CellFormat(w, h float64, txtStr, borderStr string, ln int,
 			}
 			wmax := int(math.Ceil((w - 2*f.cMargin) * 1000 / f.fontSize))
 			for _, uni := range []rune(txtStr) {
-				f.currentFont.usedRunes[int(uni)] = int(uni)
+				f.currentFont.UsedRunes[int(uni)] = int(uni)
 			}
 			space := f.escape(utf8toutf16(" ", false))
 			strSize := f.GetStringSymbolWidth(txtStr)
@@ -2405,7 +2407,7 @@ func (f *Fpdf) CellFormat(w, h float64, txtStr, borderStr string, ln int,
 				}
 				txt2 = f.escape(utf8toutf16(txtStr, false))
 				for _, uni := range []rune(txtStr) {
-					f.currentFont.usedRunes[int(uni)] = int(uni)
+					f.currentFont.UsedRunes[int(uni)] = int(uni)
 				}
 			} else {
 
@@ -3486,7 +3488,7 @@ func (f *Fpdf) endpage() {
 }
 
 // Load a font definition file from the given Reader
-func (f *Fpdf) loadfont(r io.Reader) (def fontDefType) {
+func (f *Fpdf) loadfont(r io.Reader) (def font.FontDefType) {
 	if f.err != nil {
 		return
 	}
@@ -3503,7 +3505,7 @@ func (f *Fpdf) loadfont(r io.Reader) (def fontDefType) {
 		return
 	}
 
-	if def.i, err = generateFontID(def); err != nil {
+	if def.I, err = font.GenerateFontID(def); err != nil {
 		f.err = err
 	}
 	// dump(def)
@@ -3865,6 +3867,7 @@ func (f *Fpdf) putpages() {
 	f.out("endobj")
 }
 
+// NOTE: This is where the magic happens.
 func (f *Fpdf) putfonts() {
 	if f.err != nil {
 		return
@@ -3878,7 +3881,7 @@ func (f *Fpdf) putfonts() {
 	}
 	{
 		var fileList []string
-		var info fontFileType
+		var info font.FontFileType
 		var file string
 		for file = range f.fontFiles {
 			fileList = append(fileList, file)
@@ -3888,15 +3891,15 @@ func (f *Fpdf) putfonts() {
 		}
 		for _, file = range fileList {
 			info = f.fontFiles[file]
-			if info.fontType != "UTF8" {
+			if info.FontType != "UTF8" {
 				f.newobj()
-				info.n = f.n
+				info.N = f.n
 				f.fontFiles[file] = info
 
 				var font []byte
 
-				if info.embedded {
-					font = info.content
+				if info.Embedded {
+					font = info.Content
 				} else {
 					var err error
 					font, err = f.loadFontFile(file)
@@ -3906,18 +3909,18 @@ func (f *Fpdf) putfonts() {
 					}
 				}
 				compressed := file[len(file)-2:] == ".z"
-				if !compressed && info.length2 > 0 {
-					buf := font[6:info.length1]
-					buf = append(buf, font[6+info.length1+6:info.length2]...)
+				if !compressed && info.Length2 > 0 {
+					buf := font[6:info.Length1]
+					buf = append(buf, font[6+info.Length1+6:info.Length2]...)
 					font = buf
 				}
 				f.outf("<</Length %d", len(font))
 				if compressed {
 					f.out("/Filter /FlateDecode")
 				}
-				f.outf("/Length1 %d", info.length1)
-				if info.length2 > 0 {
-					f.outf("/Length2 %d /Length3 0", info.length2)
+				f.outf("/Length1 %d", info.Length1)
+				if info.Length2 > 0 {
+					f.outf("/Length2 %d /Length3 0", info.Length2)
 				}
 				f.out(">>")
 				f.putstream(font)
@@ -3927,7 +3930,7 @@ func (f *Fpdf) putfonts() {
 	}
 	{
 		var keyList []string
-		var font fontDefType
+		var fnt font.FontDefType
 		var key string
 		for key = range f.fonts {
 			keyList = append(keyList, key)
@@ -3936,12 +3939,12 @@ func (f *Fpdf) putfonts() {
 			sort.SliceStable(keyList, func(i, j int) bool { return keyList[i] < keyList[j] })
 		}
 		for _, key = range keyList {
-			font = f.fonts[key]
+			fnt = f.fonts[key]
 			// Font objects
-			font.N = f.n + 1
-			f.fonts[key] = font
-			tp := font.Tp
-			name := font.Name
+			fnt.N = f.n + 1
+			f.fonts[key] = fnt
+			tp := fnt.Tp
+			name := fnt.Name
 			switch tp {
 			case "Core":
 				// Core font
@@ -3965,8 +3968,8 @@ func (f *Fpdf) putfonts() {
 				f.out("/FirstChar 32 /LastChar 255")
 				f.outf("/Widths %d 0 R", f.n+1)
 				f.outf("/FontDescriptor %d 0 R", f.n+2)
-				if font.DiffN > 0 {
-					f.outf("/Encoding %d 0 R", nf+font.DiffN)
+				if fnt.DiffN > 0 {
+					f.outf("/Encoding %d 0 R", nf+fnt.DiffN)
 				} else {
 					f.out("/Encoding /WinAnsiEncoding")
 				}
@@ -3977,7 +3980,7 @@ func (f *Fpdf) putfonts() {
 				var s fmtBuffer
 				s.WriteString("[")
 				for j := 32; j < 256; j++ {
-					s.printf("%d ", font.Cw[j])
+					s.printf("%d ", fnt.Cw[j])
 				}
 				s.WriteString("]")
 				f.out(s.String())
@@ -3986,30 +3989,30 @@ func (f *Fpdf) putfonts() {
 				f.newobj()
 				s.Truncate(0)
 				s.printf("<</Type /FontDescriptor /FontName /%s ", name)
-				s.printf("/Ascent %d ", font.Desc.Ascent)
-				s.printf("/Descent %d ", font.Desc.Descent)
-				s.printf("/CapHeight %d ", font.Desc.CapHeight)
-				s.printf("/Flags %d ", font.Desc.Flags)
-				s.printf("/FontBBox [%d %d %d %d] ", font.Desc.FontBBox.Xmin, font.Desc.FontBBox.Ymin,
-					font.Desc.FontBBox.Xmax, font.Desc.FontBBox.Ymax)
-				s.printf("/ItalicAngle %d ", font.Desc.ItalicAngle)
-				s.printf("/StemV %d ", font.Desc.StemV)
-				s.printf("/MissingWidth %d ", font.Desc.MissingWidth)
+				s.printf("/Ascent %d ", fnt.Desc.Ascent)
+				s.printf("/Descent %d ", fnt.Desc.Descent)
+				s.printf("/CapHeight %d ", fnt.Desc.CapHeight)
+				s.printf("/Flags %d ", fnt.Desc.Flags)
+				s.printf("/FontBBox [%d %d %d %d] ", fnt.Desc.FontBBox.Xmin, fnt.Desc.FontBBox.Ymin,
+					fnt.Desc.FontBBox.Xmax, fnt.Desc.FontBBox.Ymax)
+				s.printf("/ItalicAngle %d ", fnt.Desc.ItalicAngle)
+				s.printf("/StemV %d ", fnt.Desc.StemV)
+				s.printf("/MissingWidth %d ", fnt.Desc.MissingWidth)
 				var suffix string
 				if tp != "Type1" {
 					suffix = "2"
 				}
-				s.printf("/FontFile%s %d 0 R>>", suffix, f.fontFiles[font.File].n)
+				s.printf("/FontFile%s %d 0 R>>", suffix, f.fontFiles[fnt.File].N)
 				f.out(s.String())
 				f.out("endobj")
 			case "UTF8":
-				fontName := "utf8" + font.Name
-				usedRunes := font.usedRunes
+				fontName := "utf8" + fnt.Name
+				usedRunes := fnt.UsedRunes
 				delete(usedRunes, 0)
-				utf8FontStream := font.utf8File.GenerateСutFont(usedRunes)
+				utf8FontStream := fnt.Utf8File.GenerateСutFont(usedRunes)
 				utf8FontSize := len(utf8FontStream)
 				compressedFontStream := sliceCompress(utf8FontStream)
-				CodeSignDictionary := font.utf8File.CodeSymbolDictionary
+				CodeSignDictionary := fnt.Utf8File.CodeSymbolDictionary
 				delete(CodeSignDictionary, 0)
 
 				f.newobj()
@@ -4018,16 +4021,16 @@ func (f *Fpdf) putfonts() {
 				f.newobj()
 				f.out("<</Type /Font\n/Subtype /CIDFontType2\n/BaseFont /" + fontName + "\n" +
 					"/CIDSystemInfo " + strconv.Itoa(f.n+2) + " 0 R\n/FontDescriptor " + strconv.Itoa(f.n+3) + " 0 R")
-				if font.Desc.MissingWidth != 0 {
-					f.out("/DW " + strconv.Itoa(font.Desc.MissingWidth) + "")
+				if fnt.Desc.MissingWidth != 0 {
+					f.out("/DW " + strconv.Itoa(fnt.Desc.MissingWidth) + "")
 				}
-				f.generateCIDFontMap(&font, font.utf8File.LastRune)
+				f.generateCIDFontMap(&fnt, fnt.Utf8File.LastRune)
 				f.out("/CIDToGIDMap " + strconv.Itoa(f.n+4) + " 0 R>>")
 				f.out("endobj")
 
 				f.newobj()
-				f.out("<</Length " + strconv.Itoa(len(toUnicode)) + ">>")
-				f.putstream([]byte(toUnicode))
+				f.out("<</Length " + strconv.Itoa(len(font.ToUnicode)) + ">>")
+				f.putstream([]byte(font.ToUnicode))
 				f.out("endobj")
 
 				// CIDInfo
@@ -4038,18 +4041,18 @@ func (f *Fpdf) putfonts() {
 				// Font descriptor
 				f.newobj()
 				var s fmtBuffer
-				s.printf("<</Type /FontDescriptor /FontName /%s\n /Ascent %d", fontName, font.Desc.Ascent)
-				s.printf(" /Descent %d", font.Desc.Descent)
-				s.printf(" /CapHeight %d", font.Desc.CapHeight)
-				v := font.Desc.Flags
+				s.printf("<</Type /FontDescriptor /FontName /%s\n /Ascent %d", fontName, fnt.Desc.Ascent)
+				s.printf(" /Descent %d", fnt.Desc.Descent)
+				s.printf(" /CapHeight %d", fnt.Desc.CapHeight)
+				v := fnt.Desc.Flags
 				v = v | 4
 				v = v &^ 32
 				s.printf(" /Flags %d", v)
-				s.printf("/FontBBox [%d %d %d %d] ", font.Desc.FontBBox.Xmin, font.Desc.FontBBox.Ymin,
-					font.Desc.FontBBox.Xmax, font.Desc.FontBBox.Ymax)
-				s.printf(" /ItalicAngle %d", font.Desc.ItalicAngle)
-				s.printf(" /StemV %d", font.Desc.StemV)
-				s.printf(" /MissingWidth %d", font.Desc.MissingWidth)
+				s.printf("/FontBBox [%d %d %d %d] ", fnt.Desc.FontBBox.Xmin, fnt.Desc.FontBBox.Ymin,
+					fnt.Desc.FontBBox.Xmax, fnt.Desc.FontBBox.Ymax)
+				s.printf(" /ItalicAngle %d", fnt.Desc.ItalicAngle)
+				s.printf(" /StemV %d", fnt.Desc.StemV)
+				s.printf(" /MissingWidth %d", fnt.Desc.MissingWidth)
 				s.printf("/FontFile2 %d 0 R", f.n+2)
 				s.printf(">>")
 				f.out(s.String())
@@ -4086,7 +4089,7 @@ func (f *Fpdf) putfonts() {
 	return
 }
 
-func (f *Fpdf) generateCIDFontMap(font *fontDefType, LastRune int) {
+func (f *Fpdf) generateCIDFontMap(fnt *font.FontDefType, LastRune int) {
 	rangeID := 0
 	cidArray := make(map[int]*untypedKeyMap)
 	cidArrayKeys := make([]int, 0)
@@ -4098,14 +4101,14 @@ func (f *Fpdf) generateCIDFontMap(font *fontDefType, LastRune int) {
 
 	// for each character
 	for cid := startCid; cid < cwLen; cid++ {
-		if font.Cw[cid] == 0x00 {
+		if fnt.Cw[cid] == 0x00 {
 			continue
 		}
-		width := font.Cw[cid]
+		width := fnt.Cw[cid]
 		if width == 65535 {
 			width = 0
 		}
-		if numb, OK := font.usedRunes[cid]; cid > 255 && (!OK || numb == 0) {
+		if numb, OK := fnt.UsedRunes[cid]; cid > 255 && (!OK || numb == 0) {
 			continue
 		}
 
@@ -4358,17 +4361,17 @@ func (f *Fpdf) putresourcedict() {
 	f.out("/Font <<")
 	{
 		var keyList []string
-		var font fontDefType
+		var fnt font.FontDefType
 		var key string
 		for key = range f.fonts {
 			keyList = append(keyList, key)
 		}
 		if f.catalogSort {
-			sort.SliceStable(keyList, func(i, j int) bool { return f.fonts[keyList[i]].i < f.fonts[keyList[j]].i })
+			sort.SliceStable(keyList, func(i, j int) bool { return f.fonts[keyList[i]].I < f.fonts[keyList[j]].I })
 		}
 		for _, key = range keyList {
-			font = f.fonts[key]
-			f.outf("/F%s %d 0 R", font.i, font.N)
+			fnt = f.fonts[key]
+			f.outf("/F%s %d 0 R", fnt.I, fnt.N)
 		}
 	}
 	f.out(">>")

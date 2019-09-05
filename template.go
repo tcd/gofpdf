@@ -20,6 +20,8 @@ package gofpdf
 import (
 	"encoding/gob"
 	"sort"
+
+	"github.com/tcd/gofpdf/internal/font"
 )
 
 // CreateTemplate defines a new template using the current page size.
@@ -117,7 +119,7 @@ type Template interface {
 
 func (f *Fpdf) templateFontCatalog() {
 	var keyList []string
-	var font fontDefType
+	var fnt font.FontDefType
 	var key string
 	f.out("/Font <<")
 	for key = range f.fonts {
@@ -127,8 +129,8 @@ func (f *Fpdf) templateFontCatalog() {
 		sort.Strings(keyList)
 	}
 	for _, key = range keyList {
-		font = f.fonts[key]
-		f.outf("/F%s %d 0 R", font.i, font.N)
+		fnt = f.fonts[key]
+		f.outf("/F%s %d 0 R", fnt.I, fnt.N)
 	}
 	f.out(">>")
 }
