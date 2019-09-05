@@ -1,6 +1,6 @@
-TRG= ../files.go
-JSON= ../../../font/calligra.json
-Z= ../../../font/calligra.z
+TRG=../files.go
+JSON=../../../static/font/calligra.json
+Z=../../../static/font/calligra.z
 
 ${TRG} : ${JSON} ${Z} ./bin
 	echo "package files" >  ${TRG}
