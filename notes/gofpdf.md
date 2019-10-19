@@ -1,4 +1,4 @@
-# Notes
+# gofpdf
 
 ## Files
 
@@ -26,28 +26,11 @@
 | `svgwrite.go`       | Super basic SVG rendering                                                                 | Single Function                      |
 | `template.go`       |                                                                                           |                                      |
 | `template_impl.go`  |                                                                                           |                                      |
-| `ttfparser.go`      |                                                                                           |                                      |
+| `ttfparser.go`      | Utility to parse TTF font files                                                           |                                      |
 | `ttfparser_test.go` | *tests*                                                                                   | test                                 |
 | `utf8fontfile.go`   |                                                                                           |                                      |
 | `util.go`           |                                                                                           |                                      |
 
 
-## Terms
-
-### Fonts
-
-- CID (character identifier font)
-  - The CID-keyed font (also known as CID font, CID-based font, short for Character Identifier font) is a font structure, 
-    originally developed for PostScript font formats, designed to address a large number of glyphs. [3]
-- cmap
-  - The cmap table is one of the OpenType font tables, which are required to enable correct font functioning. 
-    It "defines the mapping of character codes to the glyph index values used in the font." [4]
-
-#### Links
-
-- [Understanding the PDF file Format – What are CID fonts](https://blog.idrsolutions.com/2011/03/understanding-the-pdf-file-format-%E2%80%93-what-are-cid-fonts/)
-
 [1]: https://helpx.adobe.com/acrobat/using/pdf-layers.html
 [2]: https://en.wikipedia.org/wiki/Spot_color
-[3]: https://en.wikipedia.org/wiki/PostScript_fonts#CID
-[4]: https://en.wikipedia.org/wiki/Cmap_(font)
