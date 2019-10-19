@@ -160,6 +160,8 @@ func (t *ttfParser) ParseMaxp() (err error) {
 	return
 }
 
+// ParseHmtx parses Horizontal Metrics
+// See: https://docs.microsoft.com/en-us/typography/opentype/otspec160/hmtx
 func (t *ttfParser) ParseHmtx() (err error) {
 	err = t.Seek("hmtx")
 	if err == nil {
@@ -235,7 +237,7 @@ func (t *ttfParser) ParseCmap() (err error) {
 			t.f.Seek(offset+2*int64(j)+int64(ro), os.SEEK_SET)
 		}
 		for c := c1; c <= c2; c++ {
-			if c == 0xFFFF {
+			if c == 0xFFFF { // 65,535 - max number of characters in ttf/otf font
 				break
 			}
 			var gid int32

@@ -31,29 +31,30 @@ const symbolContinue = 1 << 5
 const symbolAllScale = 1 << 6
 const symbol2x2 = 1 << 7
 
-// ToUnicode
+// ToUnicode has something to do with CMaps and Unicode ranges.
 // CID map Init
-// const toUnicode = "/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo\n<</Registry (Adobe)\n/Ordering (UCS)\n/Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n1 beginbfrange\n<0000> <FFFF> <0000>\nendbfrange\nendcmap\nCMapName currentdict /CMap defineresource pop\nend\nend"
-const ToUnicode = `/CIDInit /ProcSet findresource begin
-12 dict begin
-begincmap
-/CIDSystemInfo
-<</Registry (Adobe)
-/Ordering (UCS)
-/Supplement 0
->> def
-/CMapName /Adobe-Identity-UCS def
-/CMapType 2 def
-1 begincodespacerange
-<0000> <FFFF>
-endcodespacerange
-1 beginbfrange
-<0000> <FFFF> <0000>
-endbfrange
-endcmap
-CMapName currentdict /CMap defineresource pop
-end
-end`
+const ToUnicode = "/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo\n<</Registry (Adobe)\n/Ordering (UCS)\n/Supplement 0\n>> def\n/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n1 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n1 beginbfrange\n<0000> <FFFF> <0000>\nendbfrange\nendcmap\nCMapName currentdict /CMap defineresource pop\nend\nend"
+
+// const ToUnicode = `/CIDInit /ProcSet findresource begin
+// 12 dict begin
+// begincmap
+// /CIDSystemInfo
+// <</Registry (Adobe)
+// /Ordering (UCS)
+// /Supplement 0
+// >> def
+// /CMapName /Adobe-Identity-UCS def
+// /CMapType 2 def
+// 1 begincodespacerange
+// <0000> <FFFF>
+// endcodespacerange
+// 1 beginbfrange
+// <0000> <FFFF> <0000>
+// endbfrange
+// endcmap
+// CMapName currentdict /CMap defineresource pop
+// end
+// end`
 
 type Utf8FontFile struct {
 	fileReader           *FileReader
