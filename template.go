@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/tcd/gofpdf/internal/font"
+	"github.com/jung-kurt/gofpdf/internal/font"
 )
 
 // CreateTemplate defines a new template using the current page size.

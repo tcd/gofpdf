@@ -24,7 +24,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/tcd/gofpdf/internal/font"
+	"github.com/jung-kurt/gofpdf/internal/font"
 )
 
 // Version of FPDF from which this package is derived

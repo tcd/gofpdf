@@ -41,7 +41,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tcd/gofpdf/internal/font"
+	"github.com/jung-kurt/gofpdf/internal/font"
 )
 
 var gl struct {

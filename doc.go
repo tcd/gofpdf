@@ -60,11 +60,11 @@ Installation
 
 To install the package on your system, run
 
-    go get github.com/tcd/gofpdf
+    go get github.com/jung-kurt/gofpdf
 
 Later, to receive updates, run
 
-    go get -u -v github.com/tcd/gofpdf/...
+    go get -u -v github.com/jung-kurt/gofpdf/...
 
 
 Quick Start

@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/tcd/gofpdf"
-	"github.com/tcd/gofpdf/internal/font"
+	"github.com/jung-kurt/gofpdf"
+	"github.com/jung-kurt/gofpdf/internal/font"
 )
 
 func init() {
